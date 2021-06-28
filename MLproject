@@ -1,0 +1,40 @@
+name: atm_demand
+
+conda_env: conda.yaml
+
+entry_points:
+  load_raw_data:
+    parameters:
+      uri: {type: uri, default: http://localhost:8000/open_dataset.zip}
+    command: "python load_raw_data.py --uri {uri}"
+
+  process_data:
+    parameters:
+      aggregate_atms: {type:int, default: 1}
+      model_name: {type:string, default: baseline}
+      atm_csv_uri: {type: path, default: /Users/miccull/projects/atm-data/atm-dataset/atm_data.csv}
+    command: "python process_data.py --atm_csv_uri {atm_csv_uri} --aggregate_atms {aggregate_atms} --model_name {model_name}"
+
+  train_cluster:
+    parameters:
+      df_prophet_train_uri: path
+      n_clusters: {type: float, default: 3}
+      max_iter: {type: float, default: 25}
+      train_split_date: {type:string, default: 2017-06-01}
+    command: "python clustering/train_cluster.py --df_prophet_train_uri {df_prophet_train_uri} --n_clusters {n_clusters} --max_iter {max_iter} --train_split_date {train_split_date}"
+
+  train_prophet:
+    parameters:
+      df_prophet_train_uri: path
+      model_name: {type:string, default: baseline}
+      cluster_model_uri: {type: string, default: ""}
+      train_split_date: {type:string, default: 2017-06-01}
+    command: "python forecasting/train_prophet.py --df_prophet_train_uri {df_prophet_train_uri} --cluster_model_uri {cluster_model_uri} --model_name {model_name} --train_split_date {train_split_date}"
+
+  main:
+    parameters:
+      cluster_max_iter: {type: float, default: 25}
+      model_name: {type: string, default: baseline}
+      train_split_date: {type:string, default: 2017-06-01}
+      n_clusters: {type: float, default: 1}
+    command: "python main.py --model_name {model_name} --cluster_max_iter {cluster_max_iter} --n_clusters {n_clusters} --train_split_date {train_split_date}"
